@@ -201,9 +201,6 @@ include_directories(
 add_executable(drone_test src/drone_test.cpp include/drone_control.cpp include/ros_client.cpp)
 target_link_libraries(drone_test ${catkin_LIBRARIES})
 
-add_executable(cmd_land src/cmd_land.cpp)
-target_link_libraries(cmd_land ${catkin_LIBRARIES})
-
 add_executable(centralize src/centralize.cpp include/drone_control.cpp include/ros_client.cpp)
 target_link_libraries(centralize ${catkin_LIBRARIES})
 
