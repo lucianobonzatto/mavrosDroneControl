@@ -38,7 +38,7 @@ int main(int argc, char **argv)
       
       };
 
-  drone_control.guidedMode();
+  drone_control.offboardMode();
   drone_control.takeOff();
 
   last_command_time = ros::Time::now();
