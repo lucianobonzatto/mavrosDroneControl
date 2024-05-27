@@ -226,7 +226,11 @@ target_link_libraries(pose_test_4 ${catkin_LIBRARIES})
 
 ## velocity command test
 
-add_executable(velocity_test src/velocity_test.cpp include/drone_control.cpp include/ros_client.cpp)
-target_link_libraries(velocity_test ${catkin_LIBRARIES})
+add_executable(vel_test_0 src/vel_test_0.cpp include/drone_control.cpp include/ros_client.cpp)
+target_link_libraries(vel_test_0 ${catkin_LIBRARIES})
 
+add_executable(vel_test_1 src/vel_test_1.cpp include/drone_control.cpp include/ros_client.cpp)
+target_link_libraries(vel_test_1 ${catkin_LIBRARIES})
 
+add_executable(vel_test_2 src/vel_test_2.cpp include/drone_control.cpp include/ros_client.cpp)
+target_link_libraries(vel_test_2 ${catkin_LIBRARIES})

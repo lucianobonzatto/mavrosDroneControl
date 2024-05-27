@@ -158,7 +158,19 @@ void DroneControl::hover(double seconds)
     rate_->sleep();
   }
 
-  return;
+  // ros::Time current_time, last_command_time = ros::Time::now();
+  // while (ros::ok())
+  // {
+  //   ros_client_->setpoint_pos_pub_.publish(local_position_);
+  //   ros::spinOnce();
+  //   rate_->sleep();
+
+  //   current_time = ros::Time::now();
+  //   if ((current_time - last_command_time).toSec() >= seconds)
+  //   {
+  //     break;
+  //   }
+  // }
 }
 
 void DroneControl::cmd_vel(double x, double y, double z, double ang)
@@ -185,8 +197,44 @@ void DroneControl::cmd_vel(double x, double y, double z, double ang)
 
   ROS_INFO("SEND VELOCITY: x: %f y: %f z: %f yaw: %f", x, y, z, ang);
   ros_client_->velocity_pub.publish(world_msg);
-  ros::spinOnce();
-  rate_->sleep();
+  // ros::spinOnce();
+  // rate_->sleep();
+}
+
+void DroneControl::cmd_vel_base_link(double x, double y, double z, double ang)
+{
+  geometry_msgs::TwistStamped vel_msg;
+  vel_msg.header.stamp = ros::Time::now();
+  vel_msg.header.frame_id = "base_link";
+
+  vel_msg.twist.linear.x = x;
+  vel_msg.twist.linear.y = y;
+  vel_msg.twist.linear.z = z;
+  vel_msg.twist.angular.x = 0;
+  vel_msg.twist.angular.y = 0;
+  vel_msg.twist.angular.z = ang;
+
+  ROS_INFO("SEND VELOCITY: x: %f y: %f z: %f yaw: %f", x, y, z, ang);
+  ros_client_->velocity_pub.publish(vel_msg);
+//   ros::spinOnce();
+//   rate_->sleep();
+}
+
+void DroneControl::cmd_vel_unstamped(double x, double y, double z, double ang)
+{
+  geometry_msgs::Twist vel_msg;
+
+  vel_msg.linear.x = x;
+  vel_msg.linear.y = y;
+  vel_msg.linear.z = z;
+  vel_msg.angular.x = 0;
+  vel_msg.angular.y = 0;
+  vel_msg.angular.z = ang;
+
+  ROS_INFO("SEND VELOCITY: x: %f y: %f z: %f yaw: %f", x, y, z, ang);
+  ros_client_->velocity_unstamped_pub.publish(vel_msg);
+  // ros::spinOnce();
+  // rate_->sleep();
 }
 
 void DroneControl::guidedMode()
@@ -275,17 +323,14 @@ void DroneControl::takeOff()
 
   ROS_INFO("Trying to Takeoff");
   int i = 0;
-  while (ros::ok() && i < 10*ROS_RATE)
+  while (ros::ok() && i < 10 * ROS_RATE)
   {
     i++;
     ROS_INFO("Retrying to Takeoff");
-//    ros_client_->takeoff_client_.call(takeoff_request);
 	ros_client_->setpoint_pos_pub_.publish(setpoint_pos_ENU_);
     ros::spinOnce();
     rate_->sleep();
-//    ros::Duration(.1).sleep();
   }
-//  sleep(10);
 
   ROS_INFO("landed_state_: %d", landed_state_);
 
