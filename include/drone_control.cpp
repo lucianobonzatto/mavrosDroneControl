@@ -303,6 +303,7 @@ void DroneControl::guidedMode()
 void DroneControl::takeOff()
 {
   ROS_INFO("awaiting to arm");
+  // arm
   mavros_msgs::CommandBool arm_request;
   arm_request.request.value = true;
   while (ros::ok() && !current_state_.armed)
@@ -316,8 +317,9 @@ void DroneControl::takeOff()
 
   sleep(3);
 
-  mavros_msgs::CommandTOL takeoff_request;
-  takeoff_request.request.altitude = 3;
+  // Take off
+  // mavros_msgs::CommandTOL takeoff_request;
+  // takeoff_request.request.altitude = 3;
 	setpoint_pos_ENU_ = gps_init_pos_;
 	setpoint_pos_ENU_.pose.position.z += TAKEOFF_ALTITUDE;
 
