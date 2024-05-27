@@ -63,7 +63,7 @@ class DroneControl
     void cmd_vel_unstamped(double x, double y, double z, double ang);
     void cmd_vel_base_link(double x, double y, double z, double ang);
 
-    void guidedMode();
+    void offboardMode();
     void takeOff();
     void land();
     void disarm();

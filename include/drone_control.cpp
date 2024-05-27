@@ -237,7 +237,7 @@ void DroneControl::cmd_vel_unstamped(double x, double y, double z, double ang)
   // rate_->sleep();
 }
 
-void DroneControl::guidedMode()
+void DroneControl::offboardMode()
 {
   // Wait for FCU connection
   while (ros::ok() && current_state_.connected)
@@ -254,23 +254,22 @@ void DroneControl::guidedMode()
     rate_->sleep();
   }
 
-
   if (ros::Time::now() - local_position_.header.stamp < ros::Duration(1.0))
   {
-      ROS_INFO("Local_position available");
+    ROS_INFO("Local_position available");
   }
-    else
+  else
   {
-      ROS_WARN("Local_position not available, initializing to 0");
-      local_position_.header.stamp = ros::Time::now();
-      local_position_.header.frame_id = "world";
-      local_position_.pose.position.x = 0;
-      local_position_.pose.position.y = 0;
-      local_position_.pose.position.z = 0;
-      local_position_.pose.orientation.x = 0;
-      local_position_.pose.orientation.y = 0;
-      local_position_.pose.orientation.z = 0;
-      local_position_.pose.orientation.w = 1;
+    ROS_WARN("Local_position not available, initializing to 0");
+    local_position_.header.stamp = ros::Time::now();
+    local_position_.header.frame_id = "world";
+    local_position_.pose.position.x = 0;
+    local_position_.pose.position.y = 0;
+    local_position_.pose.position.z = 0;
+    local_position_.pose.orientation.x = 0;
+    local_position_.pose.orientation.y = 0;
+    local_position_.pose.orientation.z = 0;
+    local_position_.pose.orientation.w = 1;
   }
 
   setpoint_pos_ENU_ = gps_init_pos_ = local_position_;
@@ -283,14 +282,34 @@ void DroneControl::guidedMode()
     rate_->sleep();
   }
 
+  mavros_msgs::SetMode offb_set_mode;
+  offb_set_mode.request.custom_mode = "OFFBOARD";
+
   arm_cmd_.request.value = true;
+  last_request_ = ros::Time::now();
+  // Change to offboard mode and arm
   ROS_INFO("awaiting to OFFBOARD mode");
-  while (ros::ok())
+  while (ros::ok() && !current_state_.armed)
   {
-    if (current_state_.mode == "OFFBOARD")
+    if (current_state_.mode != "OFFBOARD" && (ros::Time::now() - last_request_ > ros::Duration(5.0)))
     {
-      ROS_INFO("OFFBOARD enabled");
-      break;
+      ROS_INFO("%s", current_state_.mode.c_str());
+      if (ros_client_->set_mode_client_.call(offb_set_mode) && offb_set_mode.response.mode_sent)
+      {
+        ROS_INFO("Offboard enabled");
+      }
+      last_request_ = ros::Time::now();
+    }
+    else
+    {
+      if (!current_state_.armed && (ros::Time::now() - last_request_ > ros::Duration(5.0)))
+      {
+        if (ros_client_->arming_client_.call(arm_cmd_) && arm_cmd_.response.success)
+        {
+          ROS_INFO("Vehicle armed");
+        }
+        last_request_ = ros::Time::now();
+      }
     }
     ros_client_->setpoint_pos_pub_.publish(setpoint_pos_ENU_);
     ros::spinOnce();
@@ -320,8 +339,8 @@ void DroneControl::takeOff()
   // Take off
   // mavros_msgs::CommandTOL takeoff_request;
   // takeoff_request.request.altitude = 3;
-	setpoint_pos_ENU_ = gps_init_pos_;
-	setpoint_pos_ENU_.pose.position.z += TAKEOFF_ALTITUDE;
+  setpoint_pos_ENU_ = gps_init_pos_;
+  setpoint_pos_ENU_.pose.position.z += TAKEOFF_ALTITUDE;
 
   ROS_INFO("Trying to Takeoff");
   int i = 0;
@@ -329,13 +348,16 @@ void DroneControl::takeOff()
   {
     i++;
     ROS_INFO("Retrying to Takeoff");
-	ros_client_->setpoint_pos_pub_.publish(setpoint_pos_ENU_);
+    // ros_client_->takeoff_client_.call(takeoff_request);
+    ros_client_->setpoint_pos_pub_.publish(setpoint_pos_ENU_);
+
     ros::spinOnce();
     rate_->sleep();
+    // ros::Duration(.1).sleep();
   }
+  // sleep(10);
 
   ROS_INFO("landed_state_: %d", landed_state_);
-
   ROS_INFO("Takeoff finished!");
   return;
 }
