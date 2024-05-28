@@ -11,7 +11,7 @@ class DroneControl; // Forward declaration because of circular reference
 class ROSClient
 {
   public:
-    ROSClient(int &argc, char **argv);
+    ROSClient(ros::NodeHandle *handle);
 
     void init(DroneControl *const drone_control);
 

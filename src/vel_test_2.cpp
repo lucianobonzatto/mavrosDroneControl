@@ -15,7 +15,10 @@ struct VelocityCommand
 
 int main(int argc, char **argv)
 {
-  ROSClient ros_client(argc, argv);
+  ros::init(argc, argv, "offboard_ctrl");
+  ros::NodeHandle *nh = new ros::NodeHandle();
+
+  ROSClient ros_client(nh);
   DroneControl drone_control(&ros_client);
 
   int index = 0;

@@ -16,11 +16,9 @@
 #include <std_msgs/String.h>
 #include <geographic_msgs/GeoPoseStamped.h>
 
-ROSClient::ROSClient(int &argc, char **argv)
+ROSClient::ROSClient(ros::NodeHandle *handle)
 {
-  ros::init(argc, argv, "offboard_ctrl");
-  this->nh_ = new ros::NodeHandle();
-
+  this->nh_ = handle;
   avoidCollision_ = false;
 }
 
